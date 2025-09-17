@@ -21,69 +21,65 @@ body{ margin:0; background:var(--bg); color:var(--text); font:16px/1.45 system-u
 .progress{ width:100%; height:8px; background:#3336; border-radius:6px; overflow:hidden; }
 #progressBar{ height:100%; width:0%; background:linear-gradient(90deg,var(--ok),#42d392); }
 
-/* 카드 모드 */
+/* 홈 */
+.home-view{ padding:16px 14px 96px; }
+.home-card{ max-width:980px; margin:0 auto; background:var(--card); border:1px solid #3335; border-radius:18px; padding:16px; box-shadow:0 10px 28px var(--shadow); }
+.home-card h1{ margin:6px 0 12px; }
+.home-grid{ display:grid; gap:14px; grid-template-columns:1fr; }
+.form label{ display:block; font-size:13px; color:var(--muted); margin-bottom:6px; }
+.form input{ width:100%; padding:12px 12px; border-radius:12px; border:1px solid #3a3f49; background:var(--tile2); color:var(--text); }
+.form .row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px; }
+.cta{ width:100%; height:54px; border-radius:14px; border:0; background:var(--ok); color:#fff; font-weight:800; font-size:16px; margin-top:12px; }
+.ghost{ background:transparent; border:1px solid #4447; color:var(--text); padding:10px 12px; border-radius:10px; }
+.ghost.wide{ width:100%; height:48px; margin-top:8px; }
+.panel{ background:var(--tile); border:1px solid #3336; border-radius:12px; padding:12px; }
+.panel-title{ font-weight:700; margin-bottom:8px; }
+.muted{ color:var(--muted); }
+
+.home-info{ display:grid; gap:12px; }
+
+/* 카드(풀이) */
 .card-view{ padding:18px 14px 96px; }
-.card{
-  max-width:720px; margin:0 auto; background:var(--card); border:1px solid #3335; border-radius:18px; padding:16px;
-  box-shadow:0 10px 28px var(--shadow);
-}
+.card{ max-width:720px; margin:0 auto; background:var(--card); border:1px solid #3335; border-radius:18px; padding:16px; box-shadow:0 10px 28px var(--shadow); }
 .qhead{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
 #qTitle{ font-weight:700; font-size:18px; }
 .help{ background:var(--tile); border:1px solid #3336; border-radius:12px; padding:10px 12px; color:var(--muted); margin:8px 0 4px; }
 .help ol{ margin:0 0 0 18px; padding:0; }
-.ghost{ background:transparent; border:1px solid #4447; color:var(--text); padding:8px 12px; border-radius:10px; }
-
 .choices{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:14px 0 10px; }
-.choice{
-  height:72px; border-radius:16px; border:1px solid #3a3f49; background:var(--tile2); color:var(--text);
-  font-weight:800; font-size:22px;
-}
+.choice{ height:72px; border-radius:16px; border:1px solid #3a3f49; background:var(--tile2); color:var(--text); font-weight:800; font-size:22px; }
 .choice.selected{ outline:3px solid var(--ok); background:#122; }
+.wrong-btn{ width:100%; height:60px; border-radius:14px; border:1px solid var(--wrongDark); background:var(--wrong); color:#fff; font-weight:800; font-size:18px; }
 
-.wrong-btn{
-  width:100%; height:60px; border-radius:14px; border:1px solid var(--wrongDark);
-  background:var(--wrong); color:#fff; font-weight:800; font-size:18px;
-}
-
-/* 검토 모드 */
+/* 검토(오답체크) */
 .review-view{ padding:12px 12px 96px; }
 .review-head{ max-width:980px; margin:0 auto 12px; display:flex; align-items:end; justify-content:space-between; gap:10px; flex-wrap:wrap; }
 .subtitle{ font-weight:700; }
 .note{ color:var(--muted); font-size:13px; margin-top:4px; }
-.group{ display:flex; gap:8px; }
-.pill-btn{ padding:8px 12px; border-radius:999px; border:1px solid #4447; background:#1f2430; color:var(--text); }
-.pill-btn.active{ background:var(--ok); border-color:transparent; }
-.pager{ display:flex; gap:8px; align-items:center; }
-#pageLabel{ font-size:14px; color:var(--muted); }
-
-.grid{
-  max-width:980px; margin:0 auto;
-  display:grid; grid-template-columns:repeat(auto-fill, minmax(92px,1fr)); gap:10px;
-}
-.tile{
-  height:84px; border-radius:16px; border:1px solid #3a3f49; background:var(--tile2); color:var(--text);
-  display:flex; flex-direction:column; align-items:center; justify-content:center; user-select:none; gap:6px;
-}
+.grid{ max-width:980px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fill, minmax(92px,1fr)); gap:10px; }
+.tile{ height:84px; border-radius:16px; border:1px solid #3a3f49; background:var(--tile2); color:var(--text);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; user-select:none; gap:6px; }
 .tile .big{ font-weight:800; font-size:20px; }
 .tile .small{ font-size:13px; color:var(--muted); }
 .tile.answered{ outline:2px solid var(--ok); }
 .tile.wrong{ background:var(--wrong); color:#fff; border-color:var(--wrongDark); }
 .tile.wrong .small{ color:#fff; }
 
-/* 고정 하단 도크 */
-.dock{
-  position:fixed; left:0; right:0; bottom:0; z-index:30; backdrop-filter:blur(6px);
-  background:linear-gradient(180deg, #0000, #0004), var(--card);
-  border-top:1px solid #3335; padding:10px 12px;
-  display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;
-}
+/* 결과 화면 */
+.result-view{ padding:18px 14px 96px; display:flex; }
+.result-card{ max-width:520px; margin:0 auto; background:var(--card); border:1px solid #3335; border-radius:18px; padding:16px; text-align:center; box-shadow:0 10px 28px var(--shadow); }
+.bigscore{ font-size:54px; font-weight:800; margin:10px 0 6px; }
+.result-actions{ display:flex; gap:10px; justify-content:center; margin-top:12px; }
+
+/* 하단 도크 */
+.dock{ position:fixed; left:0; right:0; bottom:0; z-index:30; backdrop-filter:blur(6px); background:linear-gradient(180deg, #0000, #0004), var(--card); border-top:1px solid #3335; padding:10px 12px; }
+.dock-row{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
 .nav.big{ height:56px; font-size:16px; border-radius:14px; border:1px solid #4447; background:#1f2430; color:var(--text); }
 .nav.big.primary{ background:var(--ok); border-color:transparent; color:#fff; }
 .nav.big.ghost{ background:transparent; }
-.nav.small{ padding:8px 12px; border-radius:10px; border:1px solid #4447; background:#1f2430; color:var(--text); }
 
-/* 반응형 */
+/* 데스크톱 */
 @media (min-width:880px){
+  .home-grid{ grid-template-columns:360px 1fr; }
   .choices{ grid-template-columns:repeat(4,160px); justify-content:center; }
-  .dock{ grid-template-columns:240px 1fr 160px; max-width:980px; margin:0 auto; left:0; right:0; }
+  .dock-row{ grid-template-columns:240px 1fr 200px; max-width:980px; margin:0 auto; }
 }
