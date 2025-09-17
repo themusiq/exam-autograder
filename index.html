@@ -1,35 +1,83 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>유기농업기능사 가채점기</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <h1>가채점기</h1>
-    <div id="stats">틀린 개수: 0 | 점수: 100</div>
+  <header class="topbar">
+    <div class="title">가채점기</div>
+    <div class="stats">
+      <span id="wrongStat">틀린 0</span> ·
+      <span id="scoreStat">점수 100</span> ·
+      <span id="progressStat">0%</span>
+      <span id="passBadge" class="badge mute">대기</span>
+    </div>
+    <div class="progress"><div id="progressBar"></div></div>
   </header>
 
   <main>
-    <div id="question-card">
-      <h2 id="qnum">문항 1</h2>
-      <div class="choices">
-        <button onclick="pick(1)">①</button>
-        <button onclick="pick(2)">②</button>
-        <button onclick="pick(3)">③</button>
-        <button onclick="pick(4)">④</button>
+    <!-- 카드 모드: 풀이 -->
+    <section id="cardView" class="card-view">
+      <div class="card">
+        <div class="qhead">
+          <button class="ghost" onclick="toggleHelp()">도움말</button>
+          <div id="qTitle">문항 1 / 60</div>
+          <button class="ghost" onclick="goReview()">검토</button>
+        </div>
+
+        <div id="helpBox" class="help" hidden>
+          <ol>
+            <li>문항에서 <b>①~④ 중 하나</b>를 탭해 <b>선택</b>한다.</li>
+            <li>정답지 확인 후 틀렸다면 <b>오답 토글</b>을 누른다. (바로 표시 가능)</li>
+            <li><b>모든 문항을 답하면</b> 자동으로 <b>검토 화면</b>으로 이동한다.</li>
+            <li>검토 화면에선 <b>틀린 문항만 탭</b>해서 빨간색으로 표시한다.</li>
+            <li>빨간색 개수 기준으로 <b>점수</b>가 계산되고 <b>합격/불합격</b>이 표시된다.</li>
+          </ol>
+        </div>
+
+        <div class="choices">
+          <button class="choice" id="c1" onclick="pick(1)">①</button>
+          <button class="choice" id="c2" onclick="pick(2)">②</button>
+          <button class="choice" id="c3" onclick="pick(3)">③</button>
+          <button class="choice" id="c4" onclick="pick(4)">④</button>
+        </div>
+
+        <button class="wrong-btn" id="wrongBtn" onclick="toggleWrong()">오답 표시</button>
       </div>
-      <button class="wrong-btn" onclick="toggleWrong()">오답 표시/해제</button>
-    </div>
+    </section>
+
+    <!-- 검토 모드: 오답체크 -->
+    <section id="reviewView" class="review-view" hidden>
+      <div class="review-head">
+        <div class="left">
+          <div class="subtitle">검토/오답체크</div>
+          <div class="note">타일( <span class="ex wrong">빨강</span> )을 탭하면 오답 표시/해제 됩니다. 각 타일은 <b>문항 / 선택번호</b>를 보여줍니다.</div>
+        </div>
+        <div class="right">
+          <div class="group">
+            <button class="pill-btn" id="g20" onclick="setGroupSize(20)">3분할(20×3)</button>
+            <button class="pill-btn active" id="g30" onclick="setGroupSize(30)">2분할(30×2)</button>
+          </div>
+          <div class="pager">
+            <button class="nav small" onclick="prevPage()">◀</button>
+            <span id="pageLabel">1 / 2</span>
+            <button class="nav small" onclick="nextPage()">▶</button>
+          </div>
+        </div>
+      </div>
+      <div id="grid" class="grid"></div>
+    </section>
   </main>
 
-  <footer>
-    <button onclick="prevQ()">◀ 이전</button>
-    <button onclick="nextQ()">다음 ▶</button>
-    <button onclick="resetAll()">초기화</button>
-  </footer>
+  <!-- 고정 하단 도크 -->
+  <nav class="dock">
+    <button class="nav big" onclick="prevQ()">◀ 이전</button>
+    <button class="nav big primary" onclick="nextQ()">다음 ▶</button>
+    <button class="nav big ghost" onclick="resetAll()">초기화</button>
+  </nav>
 
   <script src="script.js"></script>
 </body>
