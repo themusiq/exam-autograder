@@ -5,8 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>유기농업기능사 가채점기</title>
   <link rel="stylesheet" href="style.css" />
+
+  <!-- Firebase (모듈 CDN) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+    // 🔧 네 프로젝트 설정 (Firebase 콘솔의 웹앱 config 값)
+    export const firebaseConfig = {
+      apiKey: "AIzaSyC9_eeUsaRSFsBf0-A2BxMqmoY_9KHYPdQ",
+      authDomain: "organic-exam.firebaseapp.com",
+      projectId: "organic-exam",
+      storageBucket: "organic-exam.firebasestorage.app",
+      messagingSenderId: "538101795363",
+      appId: "1:538101795363:web:f959d442bada37cbf87f96"
+    };
+
+    // 전역에 노출: script.js에서 import 없이 접근할 수 있도록
+    window.__fb = {
+      app: initializeApp(firebaseConfig),
+    };
+    window.__fb.db = getFirestore(window.__fb.app);
+  </script>
 </head>
 <body>
+
+  <!-- 상단 공통바 -->
   <header class="topbar">
     <div class="title">가채점기</div>
     <div class="stats">
@@ -19,66 +43,127 @@
   </header>
 
   <main>
-    <!-- 카드 모드: 풀이 -->
-    <section id="cardView" class="card-view">
+
+    <!-- 홈(대시보드) -->
+    <section id="homeView" class="home-view">
+      <div class="home-card">
+        <h1>대시보드</h1>
+        <div class="home-grid">
+          <div class="form">
+            <label>닉네임 (실명 금지)</label>
+            <input id="nicknameInput" maxlength="24" placeholder="예: thinker_farmer" />
+            <div class="row">
+              <div>
+                <label>연도</label>
+                <input id="yearInput" type="number" inputmode="numeric" placeholder="예: 2025" />
+              </div>
+              <div>
+                <label>회차</label>
+                <input id="roundInput" type="text" inputmode="numeric" placeholder="예: 01" />
+              </div>
+            </div>
+            <button class="cta" id="startBtn">시험 시작</button>
+            <button class="ghost wide" id="resumeBtn" hidden>이어 풀기</button>
+          </div>
+
+          <div class="home-info">
+            <div class="panel">
+              <div class="panel-title">최근 결과</div>
+              <div id="lastResultBox" class="muted">저장된 기록이 없습니다.</div>
+            </div>
+            <div class="panel">
+              <div class="panel-title">도움말</div>
+              <ul class="muted">
+                <li>①~④ 중 하나 탭 → 선택</li>
+                <li>정답지 확인 후 틀리면 <b>오답 표시</b>로 빨간색 토글</li>
+                <li>응답 100%가 되면 자동으로 <b>검토·오답체크</b>로 이동</li>
+                <li>검토 화면에서 <b>틀린 문항만</b> 탭 → 오답 토글 (정답번호 입력 팝업)</li>
+                <li>오답 ≤ 24 → <b>합격</b>, 초과 → <b>탈락</b></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 풀이(카드) -->
+    <section id="cardView" class="card-view" hidden>
       <div class="card">
         <div class="qhead">
-          <button class="ghost" onclick="toggleHelp()">도움말</button>
+          <button class="ghost" id="helpBtn">도움말</button>
           <div id="qTitle">문항 1 / 60</div>
-          <button class="ghost" onclick="goReview()">검토</button>
+          <button class="ghost" id="toReviewBtn">검토</button>
         </div>
 
         <div id="helpBox" class="help" hidden>
           <ol>
-            <li>문항에서 <b>①~④ 중 하나</b>를 탭해 <b>선택</b>한다.</li>
-            <li>정답지 확인 후 틀렸다면 <b>오답 토글</b>을 누른다. (바로 표시 가능)</li>
-            <li><b>모든 문항을 답하면</b> 자동으로 <b>검토 화면</b>으로 이동한다.</li>
-            <li>검토 화면에선 <b>틀린 문항만 탭</b>해서 빨간색으로 표시한다.</li>
-            <li>빨간색 개수 기준으로 <b>점수</b>가 계산되고 <b>합격/불합격</b>이 표시된다.</li>
+            <li><b>①~④</b> 중 하나를 탭해 <b>선택</b>.</li>
+            <li>정답지 확인 후 틀렸다면 <b>오답 표시</b>로 빨간색 토글.</li>
+            <li>모든 문항 응답 시 자동으로 <b>검토</b> 화면으로 이동.</li>
           </ol>
         </div>
 
         <div class="choices">
-          <button class="choice" id="c1" onclick="pick(1)">①</button>
-          <button class="choice" id="c2" onclick="pick(2)">②</button>
-          <button class="choice" id="c3" onclick="pick(3)">③</button>
-          <button class="choice" id="c4" onclick="pick(4)">④</button>
+          <button class="choice" id="c1">①</button>
+          <button class="choice" id="c2">②</button>
+          <button class="choice" id="c3">③</button>
+          <button class="choice" id="c4">④</button>
         </div>
 
-        <button class="wrong-btn" id="wrongBtn" onclick="toggleWrong()">오답 표시</button>
+        <button class="wrong-btn" id="toggleWrongBtn">오답 표시</button>
       </div>
     </section>
 
-    <!-- 검토 모드: 오답체크 -->
+    <!-- 검토(오답체크) : 2분할 고정(30×2) -->
     <section id="reviewView" class="review-view" hidden>
       <div class="review-head">
         <div class="left">
-          <div class="subtitle">검토/오답체크</div>
-          <div class="note">타일( <span class="ex wrong">빨강</span> )을 탭하면 오답 표시/해제 됩니다. 각 타일은 <b>문항 / 선택번호</b>를 보여줍니다.</div>
+          <div class="subtitle">검토/오답체크 (2분할 30×2)</div>
+          <div class="note">
+            타일(<span class="ex wrong">빨강</span>)을 탭하면 오답 표시/해제됩니다.
+            타일은 <b>문항 / 선택번호</b>를 보여줍니다.
+          </div>
         </div>
         <div class="right">
-          <div class="group">
-            <button class="pill-btn" id="g20" onclick="setGroupSize(20)">3분할(20×3)</button>
-            <button class="pill-btn active" id="g30" onclick="setGroupSize(30)">2분할(30×2)</button>
-          </div>
-          <div class="pager">
-            <button class="nav small" onclick="prevPage()">◀</button>
-            <span id="pageLabel">1 / 2</span>
-            <button class="nav small" onclick="nextPage()">▶</button>
-          </div>
+          <button class="ghost" id="backToSolveBtn">풀이로</button>
+          <button class="ghost" id="backHomeBtn">홈으로</button>
         </div>
       </div>
       <div id="grid" class="grid"></div>
     </section>
+
+    <!-- 결과 화면 -->
+    <section id="resultView" class="result-view" hidden>
+      <div class="result-card">
+        <h2>결과</h2>
+        <div class="bigscore" id="finalScore">100</div>
+        <div class="muted">틀린 개수: <span id="finalWrong">0</span> / 60</div>
+        <div id="finalBadge" class="badge pass">합격</div>
+        <div class="result-actions">
+          <button class="cta" id="toHomeFromResult">홈으로</button>
+          <button class="ghost" id="againBtn">다시 풀기</button>
+        </div>
+      </div>
+    </section>
+
   </main>
 
-  <!-- 고정 하단 도크 -->
+  <!-- 하단 도크: 모드별 전환 -->
   <nav class="dock">
-    <button class="nav big" onclick="prevQ()">◀ 이전</button>
-    <button class="nav big primary" onclick="nextQ()">다음 ▶</button>
-    <button class="nav big ghost" onclick="resetAll()">초기화</button>
+    <!-- 풀이 도크 -->
+    <div id="dockCard" class="dock-row" hidden>
+      <button class="nav big" id="prevQBtn">◀ 이전</button>
+      <button class="nav big primary" id="nextQBtn">다음 ▶</button>
+      <button class="nav big ghost" id="resetAllBtn">전체 초기화</button>
+    </div>
+    <!-- 검토 도크 -->
+    <div id="dockReview" class="dock-row" hidden>
+      <button class="nav big" id="prevPageBtn">◀ 이전 페이지</button>
+      <button class="nav big primary" id="nextPageBtn">다음 페이지 ▶</button>
+      <button class="nav big ghost" id="resetWrongBtn">오답 초기화</button>
+    </div>
   </nav>
 
-  <script src="script.js"></script>
+  <script src="script.js" type="module"></script>
 </body>
 </html>
