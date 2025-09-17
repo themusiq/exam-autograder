@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>유기농업기능사 가채점기</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>가채점기</h1>
+    <div id="stats">틀린 개수: 0 | 점수: 100</div>
+  </header>
+
+  <main>
+    <div id="question-card">
+      <h2 id="qnum">문항 1</h2>
+      <div class="choices">
+        <button onclick="pick(1)">①</button>
+        <button onclick="pick(2)">②</button>
+        <button onclick="pick(3)">③</button>
+        <button onclick="pick(4)">④</button>
+      </div>
+      <button class="wrong-btn" onclick="toggleWrong()">오답 표시/해제</button>
+    </div>
+  </main>
+
+  <footer>
+    <button onclick="prevQ()">◀ 이전</button>
+    <button onclick="nextQ()">다음 ▶</button>
+    <button onclick="resetAll()">초기화</button>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
