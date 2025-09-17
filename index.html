@@ -11,7 +11,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
     import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
-    // 🔧 네 프로젝트 설정 (Firebase 콘솔의 웹앱 config 값)
+    /* 🔧 네 프로젝트 설정 (이미 네 값) */
     export const firebaseConfig = {
       apiKey: "AIzaSyC9_eeUsaRSFsBf0-A2BxMqmoY_9KHYPdQ",
       authDomain: "organic-exam.firebaseapp.com",
@@ -21,16 +21,13 @@
       appId: "1:538101795363:web:f959d442bada37cbf87f96"
     };
 
-    // 전역에 노출: script.js에서 import 없이 접근할 수 있도록
-    window.__fb = {
-      app: initializeApp(firebaseConfig),
-    };
+    window.__fb = { app: initializeApp(firebaseConfig) };
     window.__fb.db = getFirestore(window.__fb.app);
   </script>
 </head>
 <body>
 
-  <!-- 상단 공통바 -->
+  <!-- 상단 공통 -->
   <header class="topbar">
     <div class="title">가채점기</div>
     <div class="stats">
@@ -44,14 +41,14 @@
 
   <main>
 
-    <!-- 홈(대시보드) -->
+    <!-- 홈 -->
     <section id="homeView" class="home-view">
       <div class="home-card">
         <h1>대시보드</h1>
         <div class="home-grid">
           <div class="form">
             <label>닉네임 (실명 금지)</label>
-            <input id="nicknameInput" maxlength="24" placeholder="예: thinker_farmer" />
+            <input id="nicknameInput" maxlength="24" placeholder="예: 생강남" />
             <div class="row">
               <div>
                 <label>연도</label>
@@ -62,8 +59,10 @@
                 <input id="roundInput" type="text" inputmode="numeric" placeholder="예: 01" />
               </div>
             </div>
+
             <button class="cta" id="startBtn">시험 시작</button>
-            <button class="ghost wide" id="resumeBtn" hidden>이어 풀기</button>
+            <button class="ghost wide" id="resumeBtn" hidden>이어 하기</button>
+            <button class="ghost wide" id="viewReportBtn" hidden>최근 기록 보기</button>
           </div>
 
           <div class="home-info">
@@ -72,12 +71,12 @@
               <div id="lastResultBox" class="muted">저장된 기록이 없습니다.</div>
             </div>
             <div class="panel">
-              <div class="panel-title">도움말</div>
+              <div class="panel-title">사용 안내</div>
               <ul class="muted">
-                <li>①~④ 중 하나 탭 → 선택</li>
-                <li>정답지 확인 후 틀리면 <b>오답 표시</b>로 빨간색 토글</li>
-                <li>응답 100%가 되면 자동으로 <b>검토·오답체크</b>로 이동</li>
-                <li>검토 화면에서 <b>틀린 문항만</b> 탭 → 오답 토글 (정답번호 입력 팝업)</li>
+                <li>풀이: ①~④ 중 하나를 탭해 선택</li>
+                <li>정답지 확인 후 틀렸으면 <b>오답 표시</b>로 빨간 토글</li>
+                <li>응답이 100%가 되면 자동으로 <b>검토(오답체크)</b> 이동</li>
+                <li>검토에서 각 타일을 탭해서 오답 토글(정답번호 입력 팝업)</li>
                 <li>오답 ≤ 24 → <b>합격</b>, 초과 → <b>탈락</b></li>
               </ul>
             </div>
@@ -86,20 +85,20 @@
       </div>
     </section>
 
-    <!-- 풀이(카드) -->
+    <!-- 풀이 -->
     <section id="cardView" class="card-view" hidden>
       <div class="card">
         <div class="qhead">
           <button class="ghost" id="helpBtn">도움말</button>
           <div id="qTitle">문항 1 / 60</div>
-          <button class="ghost" id="toReviewBtn">검토</button>
+          <button class="ghost" id="goReviewBtn">검토</button>
         </div>
 
         <div id="helpBox" class="help" hidden>
           <ol>
-            <li><b>①~④</b> 중 하나를 탭해 <b>선택</b>.</li>
-            <li>정답지 확인 후 틀렸다면 <b>오답 표시</b>로 빨간색 토글.</li>
-            <li>모든 문항 응답 시 자동으로 <b>검토</b> 화면으로 이동.</li>
+            <li>①~④ 중 하나를 탭해 <b>선택</b></li>
+            <li>틀렸다면 <b>오답 표시</b>로 빨간색 토글</li>
+            <li>모든 문항 응답 시 자동으로 검토로 이동</li>
           </ol>
         </div>
 
@@ -114,53 +113,61 @@
       </div>
     </section>
 
-    <!-- 검토(오답체크) : 2분할 고정(30×2) -->
+    <!-- 검토/오답체크 (60개 한 화면) -->
     <section id="reviewView" class="review-view" hidden>
       <div class="review-head">
         <div class="left">
-          <div class="subtitle">검토/오답체크 (2분할 30×2)</div>
-          <div class="note">
-            타일(<span class="ex wrong">빨강</span>)을 탭하면 오답 표시/해제됩니다.
-            타일은 <b>문항 / 선택번호</b>를 보여줍니다.
-          </div>
+          <div class="subtitle">검토/오답체크 (전체 60개)</div>
+          <div class="note">타일(<span class="ex wrong">빨강</span>)을 탭하면 오답 표시/해제됩니다. 타일은 <b>문항 / 선택(정답)</b>을 보여줍니다.</div>
         </div>
         <div class="right">
           <button class="ghost" id="backToSolveBtn">풀이로</button>
           <button class="ghost" id="backHomeBtn">홈으로</button>
         </div>
       </div>
-      <div id="grid" class="grid"></div>
-    </section>
 
-    <!-- 결과 화면 -->
-    <section id="resultView" class="result-view" hidden>
-      <div class="result-card">
-        <h2>결과</h2>
-        <div class="bigscore" id="finalScore">100</div>
-        <div class="muted">틀린 개수: <span id="finalWrong">0</span> / 60</div>
-        <div id="finalBadge" class="badge pass">합격</div>
-        <div class="result-actions">
-          <button class="cta" id="toHomeFromResult">홈으로</button>
-          <button class="ghost" id="againBtn">다시 풀기</button>
+      <div id="grid" class="grid"></div>
+
+      <!-- 결과 박스 -->
+      <div class="result-fab" id="inlineResult">
+        <div class="R">결과</div>
+        <div class="S" id="inlineScore">100</div>
+        <div class="M">틀린 <span id="inlineWrong">0</span> / 60</div>
+        <div id="inlineBadge" class="badge pass">합격</div>
+        <div class="fab-row">
+          <button class="mini" id="toHomeBtn">홈으로</button>
+          <button class="mini" id="retryBtn">다시 풀기</button>
         </div>
       </div>
     </section>
 
+    <!-- 리포트(읽기 전용) -->
+    <section id="reportView" class="review-view" hidden>
+      <div class="review-head">
+        <div class="left">
+          <div class="subtitle">최근 기록 (읽기 전용)</div>
+          <div class="note" id="reportMeta" />
+        </div>
+        <div class="right">
+          <button class="ghost" id="reportBackBtn">홈으로</button>
+        </div>
+      </div>
+      <div id="reportGrid" class="grid"></div>
+    </section>
+
   </main>
 
-  <!-- 하단 도크: 모드별 전환 -->
-  <nav class="dock">
-    <!-- 풀이 도크 -->
+  <!-- 하단 도크 (화면별로만 표시) -->
+  <nav id="dock" class="dock" hidden>
     <div id="dockCard" class="dock-row" hidden>
       <button class="nav big" id="prevQBtn">◀ 이전</button>
       <button class="nav big primary" id="nextQBtn">다음 ▶</button>
-      <button class="nav big ghost" id="resetAllBtn">전체 초기화</button>
+      <button class="nav big ghost" id="toReviewBtn">검토하기</button>
     </div>
-    <!-- 검토 도크 -->
     <div id="dockReview" class="dock-row" hidden>
-      <button class="nav big" id="prevPageBtn">◀ 이전 페이지</button>
-      <button class="nav big primary" id="nextPageBtn">다음 페이지 ▶</button>
       <button class="nav big ghost" id="resetWrongBtn">오답 초기화</button>
+      <button class="nav big ghost" id="resetAllBtn">전체 초기화</button>
+      <button class="nav big primary" id="finishBtn">결과 보기</button>
     </div>
   </nav>
 
