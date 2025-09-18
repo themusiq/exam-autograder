@@ -6,12 +6,12 @@
   <title>유기농업기능사 가채점기</title>
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Firebase (모듈 CDN) -->
+  <!-- Firebase (module CDN) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
     import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
-    /* 🔧 네 프로젝트 설정 (이미 네 값) */
+    /* 🔧 네 프로젝트 설정 (유저 값) */
     export const firebaseConfig = {
       apiKey: "AIzaSyC9_eeUsaRSFsBf0-A2BxMqmoY_9KHYPdQ",
       authDomain: "organic-exam.firebaseapp.com",
@@ -73,10 +73,10 @@
             <div class="panel">
               <div class="panel-title">사용 안내</div>
               <ul class="muted">
-                <li>풀이: ①~④ 중 하나를 탭해 선택</li>
-                <li>정답지 확인 후 틀렸으면 <b>오답 표시</b>로 빨간 토글</li>
-                <li>응답이 100%가 되면 자동으로 <b>검토(오답체크)</b> 이동</li>
-                <li>검토에서 각 타일을 탭해서 오답 토글(정답번호 입력 팝업)</li>
+                <li>풀이: ①~④를 탭해 선택</li>
+                <li>정답지와 비교해 틀리면 <b>오답 표시</b>로 빨간 토글</li>
+                <li>응답 100% → 자동 <b>검토(오답체크)</b></li>
+                <li>검토: 타일 탭 → 오답 토글(정답번호 <b>필수입력</b>)</li>
                 <li>오답 ≤ 24 → <b>합격</b>, 초과 → <b>탈락</b></li>
               </ul>
             </div>
@@ -113,12 +113,14 @@
       </div>
     </section>
 
-    <!-- 검토/오답체크 (60개 한 화면) -->
+    <!-- 검토/오답체크 (60개 한 화면, 20개 블록) -->
     <section id="reviewView" class="review-view" hidden>
       <div class="review-head">
         <div class="left">
-          <div class="subtitle">검토/오답체크 (전체 60개)</div>
-          <div class="note">타일(<span class="ex wrong">빨강</span>)을 탭하면 오답 표시/해제됩니다. 타일은 <b>문항 / 선택(정답)</b>을 보여줍니다.</div>
+          <div class="subtitle">검토/오답체크</div>
+          <div class="note">
+            타일(<span class="ex wrong">빨강</span>) 탭 → 오답 표시/해제. <b>정답번호는 필수 입력</b>입니다.
+          </div>
         </div>
         <div class="right">
           <button class="ghost" id="backToSolveBtn">풀이로</button>
@@ -126,15 +128,21 @@
         </div>
       </div>
 
-      <div id="grid" class="grid"></div>
+      <div id="gridBlocks" class="blocks">
+        <!-- 1~20 / 21~40 / 41~60 블록이 JS로 생성됨 -->
+      </div>
 
-      <!-- 결과 박스 -->
-      <div class="result-fab" id="inlineResult">
-        <div class="R">결과</div>
-        <div class="S" id="inlineScore">100</div>
-        <div class="M">틀린 <span id="inlineWrong">0</span> / 60</div>
-        <div id="inlineBadge" class="badge pass">합격</div>
-        <div class="fab-row">
+      <!-- 하단 토스트 결과: 타일 가리지 않음 -->
+      <div id="toast" class="toast">
+        <div class="toast-main">
+          <div class="toast-score" id="toastScore">100</div>
+          <div class="toast-sub">
+            <span>틀린 <b id="toastWrong">0</b> / 60</span>
+            <span class="dot">·</span>
+            <span id="toastBadge" class="badge pass">합격</span>
+          </div>
+        </div>
+        <div class="toast-actions">
           <button class="mini" id="toHomeBtn">홈으로</button>
           <button class="mini" id="retryBtn">다시 풀기</button>
         </div>
@@ -146,7 +154,7 @@
       <div class="review-head">
         <div class="left">
           <div class="subtitle">최근 기록 (읽기 전용)</div>
-          <div class="note" id="reportMeta" />
+          <div class="note" id="reportMeta"></div>
         </div>
         <div class="right">
           <button class="ghost" id="reportBackBtn">홈으로</button>
@@ -157,17 +165,19 @@
 
   </main>
 
-  <!-- 하단 도크 (화면별로만 표시) -->
+  <!-- 하단 도크 -->
   <nav id="dock" class="dock" hidden>
+    <!-- 풀이 -->
     <div id="dockCard" class="dock-row" hidden>
-      <button class="nav big" id="prevQBtn">◀ 이전</button>
-      <button class="nav big primary" id="nextQBtn">다음 ▶</button>
+      <button class="nav big" id="prevQBtn">◀</button>
+      <button class="nav big primary" id="nextQBtn">▶</button>
       <button class="nav big ghost" id="toReviewBtn">검토하기</button>
     </div>
+    <!-- 검토 -->
     <div id="dockReview" class="dock-row" hidden>
       <button class="nav big ghost" id="resetWrongBtn">오답 초기화</button>
       <button class="nav big ghost" id="resetAllBtn">전체 초기화</button>
-      <button class="nav big primary" id="finishBtn">결과 보기</button>
+      <button class="nav big primary" id="finishBtn">결과 갱신</button>
     </div>
   </nav>
 
