@@ -1,17 +1,17 @@
-// ==== 기본 상수/상태 ====
+// ===== 상수/상태 =====
 const TOTAL = 60;
 
-let current = 0;                  // 현재 문항(0~59)
+let current = 0;
 let nickname = '';
 let examYear = '';
 let examRound = '';
-let examId = '';                  // "2025-01"
+let examId = '';
 
-let choices = Array(TOTAL).fill(null);         // 1..4 or null
-let wrongs  = Array(TOTAL).fill(false);        // true/false
-let perExamAnswerKey = Array(TOTAL).fill(null);// 1..4 or null
+let choices = Array(TOTAL).fill(null);          // 1..4 or null
+let wrongs  = Array(TOTAL).fill(false);         // true/false
+let perExamAnswerKey = Array(TOTAL).fill(null); // 1..4 or null
 
-// ==== 도우미 ====
+// ===== 유틸 =====
 const $  = s => document.querySelector(s);
 const show = s => $(s).hidden = false;
 const hide = s => $(s).hidden = true;
@@ -19,11 +19,11 @@ const key = k => `grader:${k}`;
 
 function updateDockVisibility(){
   const dock = $('#dock');
-  const hasActiveRow = !$('#dockCard').hidden || !$('#dockReview').hidden;
-  dock.hidden = !hasActiveRow;
+  const active = !$('#dockCard').hidden || !$('#dockReview').hidden;
+  dock.hidden = !active;
 }
 
-// ==== 초기 바인딩 ====
+// ===== 초기화 =====
 bindUI();
 hydrateFromLocal();
 renderHome();
@@ -45,14 +45,14 @@ function bindUI(){
   $('#prevQBtn').addEventListener('click', ()=>{ if (current>0){ current--; persistAndRender(); }});
   $('#nextQBtn').addEventListener('click', ()=>{ if (current<TOTAL-1){ current++; persistAndRender(); } else { goReview(); }});
 
-  // 검토(60개 한 화면)
+  // 검토
   $('#backToSolveBtn').addEventListener('click', goCard);
   $('#backHomeBtn').addEventListener('click', goHome);
   $('#toHomeBtn').addEventListener('click', goHome);
   $('#retryBtn').addEventListener('click', ()=>{ resetAll(); goCard(); });
   $('#resetWrongBtn').addEventListener('click', resetWrong);
   $('#resetAllBtn').addEventListener('click', resetAll);
-  $('#finishBtn').addEventListener('click', showResultInline);
+  $('#finishBtn').addEventListener('click', () => { updateToast(); alert('결과가 갱신되었습니다.'); });
 
   // 리포트
   $('#reportBackBtn').addEventListener('click', goHome);
@@ -70,7 +70,7 @@ function bindUI(){
   }, {passive:true});
 }
 
-// ==== 로컬 저장/불러오기 ====
+// ===== 로컬 저장 =====
 function hydrateFromLocal(){
   nickname = localStorage.getItem(key('nickname')) || '';
   examYear = localStorage.getItem(key('examYear')) || '';
@@ -100,9 +100,9 @@ function persistLocal(){
   localStorage.setItem(key('answerKey'), JSON.stringify(perExamAnswerKey));
 }
 
-// ==== Firebase 저장 ====
+// ===== Firebase =====
 import {
-  getFirestore, doc, setDoc, getDoc, serverTimestamp
+  getFirestore, doc, setDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 const db = window.__fb.db;
 
@@ -112,23 +112,19 @@ async function saveToFirestore(){
   const wrongCount = wrongs.filter(Boolean).length;
   const score = Math.round((100 - wrongCount*(100/60))*10)/10;
   const pass = wrongCount <= 24;
-
   await setDoc(ref, {
     nickname, examYear, examRound, examId,
     choices, wrongs, perExamAnswerKey,
-    score, wrongCount, pass,
-    updatedAt: serverTimestamp()
+    score, wrongCount, pass, updatedAt: serverTimestamp()
   }, { merge:true });
-
-  localStorage.setItem(key('lastResult'),
-    JSON.stringify({ examId, score, wrongCount, pass, at: Date.now() }));
+  localStorage.setItem(key('lastResult'), JSON.stringify({ examId, score, wrongCount, pass, at: Date.now() }));
 }
 
-// ==== 네비게이션 ====
+// ===== 네비게이션 =====
 function goHome(){
   hide('#cardView'); hide('#reviewView'); hide('#reportView'); show('#homeView');
   hide('#dockCard'); hide('#dockReview'); updateDockVisibility();
-  renderHome();   // ❗ 상태는 유지 (초기화하지 않음)
+  renderHome();
 }
 function goCard(){
   hide('#homeView'); hide('#reviewView'); hide('#reportView'); show('#cardView');
@@ -140,7 +136,7 @@ function goReview(){
   hide('#dockCard'); show('#dockReview'); updateDockVisibility();
   render();
 }
-function openReport(){ // 최근 기록 읽기 전용
+function openReport(){
   const last = loadLastResultCache();
   if (!last){ alert('최근 기록이 없습니다. 먼저 한 회차를 풀어주세요.'); return; }
   buildReportFromLocal(last);
@@ -148,7 +144,7 @@ function openReport(){ // 최근 기록 읽기 전용
   hide('#dockCard'); hide('#dockReview'); updateDockVisibility();
 }
 
-// ==== 홈 렌더 ====
+// ===== 홈 렌더 =====
 function loadLastResultCache(){
   try { return JSON.parse(localStorage.getItem(key('lastResult')) || 'null'); } catch(e){ return null; }
 }
@@ -164,13 +160,13 @@ async function renderHome(){
       <div><b>회차:</b> ${last.examId}</div>
       <div><b>점수:</b> ${last.score} / <b>오답:</b> ${last.wrongCount}</div>
       <div><b>결과:</b> ${last.pass ? '합격' : '탈락'}</div>
-      <div class="muted" style="margin-top:4px;">'최근 기록 보기'에서 전체 문항(선택/정답) 확인 가능</div>
+      <div class="muted" style="margin-top:4px;">'최근 기록 보기'에서 문항별 선택/정답 확인</div>
     `;
   }
-  renderTopStats(); // 진행바/뱃지 갱신
+  renderTopStats();
 }
 
-// ==== 공통 렌더 ====
+// ===== 공통 렌더 =====
 function renderTopStats(){
   const answered = choices.filter(v=>v!=null).length;
   const wrongCount = wrongs.filter(Boolean).length;
@@ -199,61 +195,80 @@ function render(){
   }
 
   if (!$('#reviewView').hidden){
-    buildReviewGrid();
-    updateInlineResult();
+    buildReviewBlocks();  // 20개 블록
+    updateToast();
   }
 
   persistLocal();
   scheduleSave();
 }
 
-// ==== 검토(60개) ====
-function buildReviewGrid(){
-  const g = $('#grid');
-  let html = '';
-  for (let i=0;i<TOTAL;i++){
-    const ch = choices[i];
-    const selTxt = ch==null ? '—' : ['①','②','③','④'][ch-1];
-    const ans = perExamAnswerKey[i] ? `정답 ${['①','②','③','④'][perExamAnswerKey[i]-1]}` : '정답 —';
-    html += `
-      <div class="tile ${wrongs[i]?'wrong':''} ${(ch!=null)?'answered':''}" onclick="__toggleWrongAt(${i})">
-        <div class="num">${i+1}</div>
-        <div class="sel">${selTxt}</div>
-        <div class="ans">${ans}</div>
-      </div>`;
-  }
-  g.innerHTML = html;
-}
-window.__toggleWrongAt = async function(i){
-  wrongs[i] = !wrongs[i];
-  if (wrongs[i] && perExamAnswerKey[i]==null){
-    const ans = prompt('정답 번호 입력 (1~4), 취소=미저장');
-    const v = Number(ans);
-    if ([1,2,3,4].includes(v)) perExamAnswerKey[i] = v;
-  }
-  persistAndRender();
-};
+// ===== 검토(20개 블록 × 3) =====
+function buildReviewBlocks(){
+  const root = $('#gridBlocks');
+  root.innerHTML = '';
+  for (let b=0;b<3;b++){
+    const start = b*20;
+    const end = Math.min(start+20, TOTAL);
+    const block = document.createElement('div');
+    block.className = 'block';
+    block.innerHTML = `<div class="block-title">${start+1}–${end}</div><div class="grid"></div>`;
+    const grid = block.querySelector('.grid');
 
-// 결과 플로팅 갱신
-function updateInlineResult(){
+    let html = '';
+    for (let i=start;i<end;i++){
+      const ch = choices[i];
+      const selTxt = ch==null ? '—' : ['①','②','③','④'][ch-1];
+      const ans = perExamAnswerKey[i] ? `정답 ${['①','②','③','④'][perExamAnswerKey[i]-1]}` : '정답 —';
+      html += `
+        <div class="tile ${wrongs[i]?'wrong':''} ${(ch!=null)?'answered':''}" data-idx="${i}">
+          <div class="num">${i+1}</div>
+          <div class="sel">${selTxt}</div>
+          <div class="ans">${ans}</div>
+        </div>`;
+    }
+    grid.innerHTML = html;
+    // 이벤트 위임 (필수 입력 강제)
+    grid.addEventListener('click', (e)=>{
+      const t = e.target.closest('.tile'); if(!t) return;
+      const i = Number(t.dataset.idx);
+      const currentlyWrong = wrongs[i];
+      if (!currentlyWrong) {
+        // 오답으로 바꾸려면 정답번호 필수
+        const ans = prompt('정답 번호 입력 (1~4)'); 
+        const v = Number(ans);
+        if ([1,2,3,4].includes(v)) {
+          perExamAnswerKey[i] = v;
+          wrongs[i] = true;
+        } else {
+          alert('정답 번호(1~4)를 입력해야 오답체크가 됩니다.');
+        }
+      } else {
+        // 오답 해제는 자유
+        wrongs[i] = false;
+      }
+      persistAndRender();
+    });
+
+    root.appendChild(block);
+  }
+}
+
+// 하단 토스트 결과
+function updateToast(){
   const wrongCount = wrongs.filter(Boolean).length;
   const score = Math.round((100 - wrongCount*(100/60))*10)/10;
-  $('#inlineScore').textContent = score;
-  $('#inlineWrong').textContent = wrongCount;
+  $('#toastScore').textContent = score;
+  $('#toastWrong').textContent = wrongCount;
   const pass = wrongCount <= 24;
-  const b = $('#inlineBadge');
+  const b = $('#toastBadge');
   b.textContent = pass ? '합격' : '탈락';
   b.className = `badge ${pass?'pass':'fail'}`;
 }
-function showResultInline(){
-  updateInlineResult();
-  alert('결과가 갱신되었습니다. (하단 결과 카드 확인)');
-}
 
-// ==== 리포트(읽기 전용) ====
+// ===== 리포트(읽기 전용) =====
 function buildReportFromLocal(last){
   $('#reportMeta').innerHTML = `<b>회차:</b> ${last.examId} · <b>점수:</b> ${last.score} · <b>오답:</b> ${last.wrongCount} · <b>${last.pass?'합격':'탈락'}</b>`;
-
   const g = $('#reportGrid');
   let html = '';
   for (let i=0;i<TOTAL;i++){
@@ -270,7 +285,7 @@ function buildReportFromLocal(last){
   g.innerHTML = html;
 }
 
-// ==== 액션 ====
+// ===== 액션 =====
 async function startExam(){
   nickname = $('#nicknameInput').value.trim();
   examYear = ($('#yearInput').value || '').trim();
@@ -278,7 +293,6 @@ async function startExam(){
   if (!nickname || !examYear || !examRound){ alert('닉네임/연도/회차를 입력해 주세요.'); return; }
   examId = `${examYear}-${examRound}`;
 
-  // 새 회차 시작 (초기화)
   current = 0;
   choices = Array(TOTAL).fill(null);
   wrongs  = Array(TOTAL).fill(false);
